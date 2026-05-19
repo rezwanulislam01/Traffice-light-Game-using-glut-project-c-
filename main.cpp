@@ -1,35 +1,31 @@
-// traffic_game.cpp
 #include <GL/glut.h>
 #include <cmath>
 #include <iostream>
 #include <string>
 
-// Traffic light state
-// 0 = Red, 1 = Yellow, 2 = Green
+
 int state = 0;
 
-// Durations (seconds) - set from user input
 int redTime = 3;
 int yellowTime = 1;
 int greenTime = 3;
-int currentTime = 0; // elapsed seconds in current state
+int currentTime = 0;
 
-// Car / road / gameplay
-float carX = 5.0f;          // starting x position (center)
-const float carY = 20.0f;   // y position of car
-const float carW = 12.0f;   // car width
-const float carH = 6.0f;    // car height
-const float moveStep = 2.0f; // amount moved when right arrow pressed
+float carX = 5.0f;
+const float carY = 20.0f;
+const float carW = 12.0f;
+const float carH = 6.0f;
+const float moveStep = 2.0f;
 
-const float stopLineX = 80.0f; // x coordinate of stop line (traffic light)
+const float stopLineX = 80.0f;
 bool gameEnded = false;
 bool playerWon = false;
 
-// Window / view
+
 const int winW = 800;
 const int winH = 600;
 
-// Draw simple filled rectangle
+
 void drawRect(float x1, float y1, float x2, float y2) {
     glBegin(GL_QUADS);
       glVertex2f(x1, y1);
@@ -39,7 +35,7 @@ void drawRect(float x1, float y1, float x2, float y2) {
     glEnd();
 }
 
-// Draw circle (filled)
+
 void drawCircle(float cx, float cy, float r) {
     glBegin(GL_POLYGON);
     for (int i = 0; i < 360; ++i) {
@@ -49,7 +45,7 @@ void drawCircle(float cx, float cy, float r) {
     glEnd();
 }
 
-// Draw bitmap text at world coords
+
 void drawText(float x, float y, const std::string &text) {
     glRasterPos2f(x, y);
     for (const char &c : text) {
@@ -60,71 +56,66 @@ void drawText(float x, float y, const std::string &text) {
 void display() {
     glClear(GL_COLOR_BUFFER_BIT);
 
-    // --- Draw sky background ---
+
     glColor3f(0.6f, 0.85f, 1.0f);
     drawRect(0, 0, 100, 100);
 
-    // --- Road area ---
-    // Road band
+
+
     glColor3f(0.15f, 0.15f, 0.15f);
     drawRect(0, 10, 100, 40);
 
-    // Lane dashed lines
+
     glColor3f(1.0f, 1.0f, 1.0f);
     for (float x = 2.0f; x < 100.0f; x += 8.0f) {
         drawRect(x, 24.5f, x + 4.0f, 25.5f);
     }
 
-    // Stop line (in front of traffic light)
+
     glColor3f(1.0f, 1.0f, 1.0f);
     drawRect(stopLineX - 0.5f, 10.0f, stopLineX + 0.5f, 40.0f);
 
-    // --- Traffic light pole & box ---
-    // Pole
+
+
     glColor3f(0.2f, 0.2f, 0.2f);
     drawRect(stopLineX + 3.0f, 40.0f, stopLineX + 4.5f, 70.0f);
 
-    // Box
+
     glColor3f(0.12f, 0.12f, 0.12f);
     drawRect(stopLineX + 1.0f, 70.0f, stopLineX + 9.0f, 92.0f);
 
-    // Lights (arranged vertically)
-    // Red
+
     if (state == 0) glColor3f(1.0f, 0.0f, 0.0f); else glColor3f(0.3f, 0.0f, 0.0f);
     drawCircle(stopLineX + 5.0f, 86.0f, 3.8f);
-    // Yellow
+
     if (state == 1) glColor3f(1.0f, 1.0f, 0.0f); else glColor3f(0.3f, 0.3f, 0.0f);
     drawCircle(stopLineX + 5.0f, 79.0f, 3.8f);
-    // Green
+
     if (state == 2) glColor3f(0.0f, 1.0f, 0.0f); else glColor3f(0.0f, 0.3f, 0.0f);
     drawCircle(stopLineX + 5.0f, 72.0f, 3.8f);
 
-    // --- Car ---
-    // Car body
-// --- Car ---
-// Car body
+
 if (!gameEnded) {
-    glColor3f(0.0f, 0.2f, 0.8f); // blue while moving
+    glColor3f(0.0f, 0.2f, 0.8f);
 } else {
-    if (playerWon) glColor3f(0.0f, 1.0f, 0.0f); // green if success
-    else glColor3f(1.0f, 0.0f, 0.0f); // red if failed
+    if (playerWon) glColor3f(0.0f, 1.0f, 0.0f);
+    else glColor3f(1.0f, 0.0f, 0.0f);
 }
     float carLeft = carX - carW/2.0f;
     float carRight = carX + carW/2.0f;
     drawRect(carLeft, carY, carRight, carY + carH);
-    // Car top
+
     drawRect(carLeft + 2.0f, carY + carH, carRight - 2.0f, carY + carH + 3.0f);
-    // Wheels
+
     glColor3f(0.05f, 0.05f, 0.05f);
     drawCircle(carLeft + 2.5f, carY - 1.0f, 1.5f);
     drawCircle(carRight - 2.5f, carY - 1.0f, 1.5f);
 
-    // --- HUD: state and countdown ---
-    // Show current light name
+
     std::string lightName = (state == 0 ? "RED" : (state == 1 ? "YELLOW" : "GREEN"));
     glColor3f(0.0f, 0.0f, 0.0f);
     drawText(2.0f, 95.0f, "Light: " + lightName);
-    // Remaining time for this state
+
     int remain = 0;
     if (state == 0) remain = redTime - currentTime;
     else if (state == 1) remain = yellowTime - currentTime;
@@ -132,10 +123,10 @@ if (!gameEnded) {
     if (remain < 0) remain = 0;
     drawText(2.0f, 91.0f, "Seconds left: " + std::to_string(remain));
 
-    // Instructions
+
     drawText(2.0f, 87.0f, "Press RIGHT ARROW to move car. Press 'R' to reset.");
 
-    // --- Game result messages ---
+
     if (gameEnded) {
         std::string msg = playerWon ? "YOU PASSED! Press R to play again." : "GAME OVER! You crossed on RED/YELLOW. Press R to retry.";
         glColor3f(0.0f, 0.0f, 0.0f);
@@ -145,11 +136,11 @@ if (!gameEnded) {
     glutSwapBuffers();
 }
 
-// Called every 1000 ms to update light timing
+
 void timerFunc(int val) {
     if (!gameEnded) {
         currentTime++;
-        // State transitions
+
         if (state == 0 && currentTime >= redTime) {
             state = 1; currentTime = 0;
         } else if (state == 1 && currentTime >= yellowTime) {
@@ -162,20 +153,20 @@ void timerFunc(int val) {
     glutTimerFunc(1000, timerFunc, 0);
 }
 
-// Called when special keys (arrow keys) are pressed
+
 void specialKeys(int key, int x, int y) {
     if (gameEnded) return;
 
     if (key == GLUT_KEY_RIGHT) {
         carX += moveStep;
 
-        // prevent car from moving off-screen
+
         if (carX + carW/2.0f > 100.0f) carX = 100.0f - carW/2.0f;
 
-        // Check if car crosses the stop line
-        float carFront = carX + carW/2.0f; // front-most x
+
+        float carFront = carX + carW/2.0f;
         if (carFront >= stopLineX) {
-            // crossing happened
+
             if (state == 2) {
                 playerWon = true;
             } else {
@@ -189,14 +180,14 @@ void specialKeys(int key, int x, int y) {
 
 void keyboard(unsigned char key, int x, int y) {
     if (key == 'r' || key == 'R') {
-        // Reset game
+
         carX = 5.0f;
         gameEnded = false;
         playerWon = false;
         currentTime = 0;
-        state = 0; // start from red (or you could randomize)
+        state = 0;
         glutPostRedisplay();
-    } else if (key == 27) { // ESC to exit
+    } else if (key == 27) {
         exit(0);
     }
 }
@@ -217,7 +208,7 @@ int main(int argc, char** argv) {
     std::cout << "Enter Green light duration (seconds): ";
     std::cin >> greenTime;
 
-    // Initialize GLUT
+
     glutInit(&argc, argv);
     glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB);
     glutInitWindowSize(winW, winH);
